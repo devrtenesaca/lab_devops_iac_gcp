@@ -1,0 +1,21 @@
+name: Desployment Infraestructura
+on:
+    push:
+        branches: [ master ]
+jobs:
+    terraform:
+        runs-on: ubuntu-latest
+        steps:
+            - name: code checkout
+              uses: actions/checkout@v6
+
+            - name: list the source code
+              run: ls
+
+            - name: setup terraform
+              uses: hashicorp/setup-terraform@v3
+              with:
+                terraform_version: "1.14.6"
+
+            - name: terraform version
+              run: terraform --version 
