@@ -1,2 +1,18 @@
-terraform.tfstate
-.terraform
+# Directorio local de terraform (contiene binarios de providers y módulos)
+.terraform/
+
+# Archivos de estado (contienen información sensible de tu infraestructura)
+*.tfstate
+*.tfstate.*
+
+# Archivos de variables (suelen contener secretos como passwords o keys)
+*.tfvars
+*.tfvars.json
+
+# Archivos de registro y logs
+*.log
+crash.log
+
+# Archivos de configuración de CLI
+.terraformrc
+terraform.rc
