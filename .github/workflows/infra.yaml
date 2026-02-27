@@ -10,7 +10,7 @@ jobs:
               uses: actions/checkout@v6
 
             - name: list the source code
-              run: ls
+              run: ls -la
 
             - name: setup terraform
               uses: hashicorp/setup-terraform@v3
