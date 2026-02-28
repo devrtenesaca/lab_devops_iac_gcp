@@ -17,5 +17,7 @@ jobs:
               with:
                 terraform_version: "1.14.6"
 
-            - name: terraform version
-              run: terraform --version 
+            - name: terraform init
+              run: terraform init
+            - name: terraform plan
+              run: terraform plan
