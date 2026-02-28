@@ -16,8 +16,20 @@ jobs:
               uses: hashicorp/setup-terraform@v3
               with:
                 terraform_version: "1.14.6"
-
+            - name: create .tfvars
+              run: |
+                cat <<EOF > terraform.tfvars
+                prefix       = "moudulo"
+                enviroment   = "lab"
+                network_name = "vpc-demo-modules"
+                vm_name      = "pc-for-edward"
+                vm_tags      = ["env-demo", "https-server", "owner-rtenesaca"]
+                vm_image     = "debian-cloud/debian-11"
+                vm_type      = "e2-standard-2"
+                vm_zone      = "us-central1-c"
+                vm_labels    = { "env" = "demo", "app" = "webserver", "owner" = "rtenesaca" }
+                EOF
             - name: terraform init
               run: terraform init
             - name: terraform plan
-              run: terraform plan
+              run: terraform plan -input=false
