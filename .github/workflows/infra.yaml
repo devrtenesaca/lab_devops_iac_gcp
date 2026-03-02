@@ -4,7 +4,7 @@ on:
         branches: [ master ]
     workflow_dispatch:
       inputs:
-        actions:
+        action:
           description: "type "destroy" to delete all resources"
           requiered: false
           defaul: 'apply'
