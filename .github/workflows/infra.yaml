@@ -19,7 +19,7 @@ jobs:
               with:
                 terraform_version: "1.10.0"
                 #this config setup is to pass the token terraform to download the module from registry
-                cli_config_credentiales_toke: ${{ secrets.API_TOKEN_TF }}
+                cli_config_credentials_token: ${{ secrets.API_TOKEN_TF }}
             - name: create .tfvars
               run: |
                 cat <<EOF > terraform.tfvars
