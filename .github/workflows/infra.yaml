@@ -5,9 +5,9 @@ on:
     workflow_dispatch:
       inputs:
         action:
-          description: "type "destroy" to delete all resources"
-          requiered: false
-          defaul: 'apply'
+          description: 'type "destroy" to delete all resources'
+          required: false
+          default: 'apply'
 jobs:
     terraform:
         env:
