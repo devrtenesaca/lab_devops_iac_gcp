@@ -1,4 +1,4 @@
-name: Desployment Infraestructura
+name: Deploy Infra GCP
 on:
     push:
         branches: [ master ]
@@ -10,6 +10,7 @@ on:
           default: 'apply'
 jobs:
     terraform:
+        name: "🚀 Despliegue de Infraestructura en GCP"
         env:
           TF_VAR_gcp_credentials: ${{ secrets.GCP_SA_TERRAFORM }}
         runs-on: ubuntu-latest
@@ -54,9 +55,12 @@ jobs:
 
             - name: apply plan or destroy
               run: |
-                if [" ${{ github.event.inputs.action }} " == "destroy" ]; then
+                ACTION=$(echo "${{ github.event.inputs.action }}" | xargs)
+                if [ "$ACTION" == "destroy" ]; then
+                  echo "⚠️ Iniciando DESTRUCCIÓN de infraestructura..."
                   terraform destroy -auto-approve -input=false
                 else
+                  echo "🚀 Iniciando DESPLIEGUE (Apply)..."
                   terraform apply -auto-approve -input=false
                 fi
             - name: upload result
