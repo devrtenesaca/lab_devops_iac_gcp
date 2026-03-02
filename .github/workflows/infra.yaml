@@ -4,6 +4,8 @@ on:
         branches: [ master ]
 jobs:
     terraform:
+        env:
+          GOOGLE_GCP: ${{ secrets.SECRET_GCP }}
         runs-on: ubuntu-latest
         steps:
             - name: code checkout
@@ -37,7 +39,12 @@ jobs:
 
             - name: apply plan
               run: terraform apply -auto-approve -input=false
-
+            
+            - name: secret information
+              run: |
+                echo "the value of secret: ${{ secrets.SECRET_GCP }}"
+                echo "valor de variable de entorno: $GOOGLE_GCP"
+            
             - name: upload result
               uses: actions/upload-artifact@v4
               with:
