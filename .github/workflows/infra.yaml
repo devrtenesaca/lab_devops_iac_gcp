@@ -26,6 +26,13 @@ jobs:
                 terraform_version: "1.10.0"
                 #this config setup is to pass the token terraform to download the module from registry
                 cli_config_credentials_token: ${{ secrets.API_TOKEN_TF }}
+
+            # authentication to gcp from runner
+            - name: Google Auth
+              uses: google-github-actions/auth@v2
+              with:
+                credentials_json: ${{ secrets.GOOGLE_SA_TERRAFORM }}
+
             - name: create .tfvars
               run: |
                 cat <<EOF > terraform.tfvars

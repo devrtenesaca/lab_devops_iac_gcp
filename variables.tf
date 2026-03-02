@@ -1,8 +1,8 @@
-variable "gcp_credentials" {
-  description = "the service account credentials"
-  type        = string
+# variable "gcp_credentials" {
+#   description = "the service account credentials"
+#   type        = string
 
-}
+# }
 
 variable "prefix" {
   type = string
