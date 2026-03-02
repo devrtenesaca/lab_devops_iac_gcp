@@ -17,3 +17,12 @@ provider "google" {
   #credentials = file("../opensip-prod-7e56dd74c247.json")
 
 }
+
+
+terraform {
+  backend "gcs" {
+    bucket = "gactions-gcp-lab" # Debe ser un bucket que ya exista
+    prefix = "terraform/state"
+    #credentials = "../opensip-prod-7e56dd74c247.json"
+  }
+}

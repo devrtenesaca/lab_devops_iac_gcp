@@ -7,6 +7,11 @@ module "network_vpc" {
   }
 
 }
+output "network_vpc" {
+  description = "the name of vpc"
+  value       = module.network_vpc.vpc_name
+
+}
 
 module "vpc_instance" {
   source = "app.terraform.io/opensip/moduleinstances/google"
@@ -18,7 +23,7 @@ module "vpc_instance" {
   instance_labels = var.vm_labels
   instance_subnet = "web-subnet"
   instance_tags   = var.vm_tags
-  instance_vpc    = var.network_name
+  instance_vpc    = module.network_vpc.vpc_name
   instance_zone   = var.vm_zone
   instance_type   = var.vm_type
 
