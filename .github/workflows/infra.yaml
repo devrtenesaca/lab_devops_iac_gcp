@@ -62,7 +62,7 @@ jobs:
 
             - name: apply plan or destroy
               run: |
-                ACTION=$(echo "${{ github.event.inputs.action }}" | xargs | tr '[:upper:]' '[:lowe:]')
+                ACTION=$(echo "${{ github.event.inputs.action }}" | xargs | tr '[:upper:]' '[:lower:]')
                 if [ "$ACTION" == "destroy" ]; then
                   echo "⚠️ Iniciando DESTRUCCIÓN de infraestructura..."
                   terraform destroy -auto-approve -input=false
