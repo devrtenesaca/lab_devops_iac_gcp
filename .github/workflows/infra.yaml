@@ -12,18 +12,16 @@ on:
           required: false
           default: 'apply'
 
+#JOB1: PLANNING 
 jobs:
-    terraform:
-        name: "🚀 Despliegue de Infraestructura en GCP"
+    terraform_plan:
+        name: "🚀 Planning ${{ github.event.inputs.action || 'Push Apply' }}"
         env:
           TF_VAR_gcp_credentials: ${{ secrets.GCP_SA_TERRAFORM }}
         runs-on: ubuntu-latest
         steps:
             - name: code checkout
               uses: actions/checkout@v6
-
-            - name: list the source code
-              run: ls -la
 
             - name: setup terraform
               uses: hashicorp/setup-terraform@v3
@@ -51,8 +49,10 @@ jobs:
                 vm_zone      = "us-central1-c"
                 vm_labels    = { "env" = "demo", "app" = "webserver", "owner" = "rtenesaca" }
                 EOF
+
             - name: terraform init
               run: terraform init
+            
             - name: terraform validate
               id: validate
               run: terraform validate -no-color
@@ -65,14 +65,50 @@ jobs:
                 ACTION=$(echo "${{ github.event.inputs.action }}" | xargs | tr '[:upper:]' '[:lower:]')
                 if [ "$ACTION" == "destroy" ]; then
                   echo "⚠️ Iniciando DESTRUCCIÓN de infraestructura..."
-                  terraform destroy -auto-approve -input=false
+                  terraform destroy -auto-approve -out=tfplan -input=false
                 else
                   echo "🚀 Iniciando DESPLIEGUE (Apply)..."
-                  terraform apply -auto-approve -input=false
+                  terraform plan -out=tfplan -input=false
                 fi
-            - name: upload result
+            
+            - name: save output plan to file
               uses: actions/upload-artifact@v4
               with:
-                name: certificado-final
-                path: certificacion.txt
+                name: tf-plan-file
+                path: tfplan
 
+#JOB2: APPLY
+    terraform_apply:
+        name: "🚀 Applying ${{ github.event.inputs.action || 'Push Apply' }}"
+        needs: terraform_plan
+        env:
+          TF_VAR_gcp_credentials: ${{ secrets.GCP_SA_TERRAFORM }}
+        runs-on: ubuntu-latest
+        steps:
+            - name: code checkout
+              uses: actions/checkout@v6
+
+            - name: setup terraform
+              uses: hashicorp/setup-terraform@v3
+              with:
+                terraform_version: "1.10.0"
+                cli_config_credentials_token: ${{ secrets.API_TOKEN_TF }}
+
+            # authentication to gcp from runner
+            - name: Google Auth
+              uses: google-github-actions/auth@v2
+              with:
+                credentials_json: ${{ secrets.GCP_SA_TERRAFORM }}
+
+            - name: download plan file
+              uses: actions/download-artifact@v4
+              with:
+                name: tf-plan-file
+
+            - name: terraform init
+              run: terraform init
+
+            - name: apply plan
+              run: |
+                terraform apply -auto-approve tfplan
+              
