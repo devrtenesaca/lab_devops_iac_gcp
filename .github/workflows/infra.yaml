@@ -1,4 +1,7 @@
 name: Deploy Infra GCP
+run-name: "${{ github.actor }} - ${{ github.event.inputs.action || 'Push Apply' }}"
+
+
 on:
     push:
         branches: [ master ]
@@ -8,6 +11,7 @@ on:
           description: 'type "destroy" to delete all resources'
           required: false
           default: 'apply'
+
 jobs:
     terraform:
         name: "🚀 Despliegue de Infraestructura en GCP"
@@ -49,13 +53,16 @@ jobs:
                 EOF
             - name: terraform init
               run: terraform init
+            - name: terraform validate
+              id: validate
+              run: terraform validate -no-color
 
             - name: terraform plan
               run: terraform plan -input=false
 
             - name: apply plan or destroy
               run: |
-                ACTION=$(echo "${{ github.event.inputs.action }}" | xargs)
+                ACTION=$(echo "${{ github.event.inputs.action }}" | xargs | tr '[:upper:]' '[:lowe:]')
                 if [ "$ACTION" == "destroy" ]; then
                   echo "⚠️ Iniciando DESTRUCCIÓN de infraestructura..."
                   terraform destroy -auto-approve -input=false
