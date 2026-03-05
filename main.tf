@@ -14,7 +14,7 @@ output "network_vpc" {
 }
 
 module "vpc_instance" {
-  sourc = "app.terraform.io/opensip/moduleinstances/google"
+  source = "app.terraform.io/opensip/moduleinstances/google"
   #source = "./terraform-google-moduleinstances"
   version = "1.0.5"
 
