@@ -2,6 +2,7 @@ name: Deploy Infra GCP
 run-name: "${{ github.actor }} - ${{ github.event.inputs.action || 'Push Apply' }}"
 
 
+
 on:
     push:
         branches: [ master ]
@@ -84,6 +85,7 @@ jobs:
         env:
           TF_VAR_gcp_credentials: ${{ secrets.GCP_SA_TERRAFORM }}
         runs-on: ubuntu-latest
+        environment: infra_lab_iac_gcp_production
         steps:
             - name: code checkout
               uses: actions/checkout@v6
