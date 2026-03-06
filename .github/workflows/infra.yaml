@@ -16,6 +16,7 @@ on:
 #JOB1: PLANNING 
 jobs:
     terraform_plan:
+        needs: terraform_lint # <-- JOBS testing
         name: "🚀 Planning ${{ github.event.inputs.action || 'Push Apply' }}"
         env:
           TF_VAR_gcp_credentials: ${{ secrets.GCP_SA_TERRAFORM }}
@@ -54,13 +55,6 @@ jobs:
             - name: terraform init
               id: init
               run: terraform init
-            
-            - name: terraform validate
-              id: validate
-              if: steps.init.outcome == 'success'
-              run: |
-                echo "the init of terraform was succesfull"
-                terraform validate -no-color
 
             - name: terraform plan
               run: terraform plan -input=false
@@ -117,4 +111,50 @@ jobs:
             - name: apply plan
               run: |
                 terraform apply -auto-approve tfplan
-              
+
+ 
+#JOBS: LINTIN VALIDATION
+    terraform_lint:
+      name: "🧹 Lint & Validate"
+      runs-on: ubuntu-latest
+      steps:
+        - name: Code Checkout 
+          uses: acction/checkout@v4
+
+        - name: Setup terraform
+          uses: hashicorp/setup-terraform@v3
+          with:
+            terraform_version: "1.10.0"
+            cli_config_credentials_token: ${{ secrets.API_TOKEN_TF }}
+        
+        - name: Terraform format check
+          id: terraform_check
+          run: terraform fmt -check -recursive
+          # the flag -check makes the command fail (exit 1) if there are improperly formatted files
+
+        - name: Terraform init
+          run: terraform init -backend=false
+          # backend false avoid that terraform try to connect to bucket, just donwload the pluggins and modules
+
+        - name: terraform validate
+          id: validate
+          if: steps.terraform_check.outcome == 'success'
+          run: |
+            echo "the init of terraform was succesfull"
+            terraform validate -no-color
+
+    #JOB3: REPORT INFROMATION
+
+    final_report:
+      name: "final information from workflow"
+      needs: [terraform_lint, terraform_apply ]
+      if: failure()
+      runs-on: ubuntu-latest
+      steps:
+        - name: Output information
+          run: |
+            echo " something wrong" 
+            echo "${{ github }}"
+
+             
+
