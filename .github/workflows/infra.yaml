@@ -52,11 +52,15 @@ jobs:
                 EOF
 
             - name: terraform init
+              id: init
               run: terraform init
             
             - name: terraform validate
               id: validate
-              run: terraform validate -no-color
+              if: steps.init.outcome == 'success'
+              run: |
+                echo "the init of terraform was succesfull"
+                terraform validate -no-color
 
             - name: terraform plan
               run: terraform plan -input=false
