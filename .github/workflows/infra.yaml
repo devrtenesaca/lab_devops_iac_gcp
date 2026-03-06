@@ -13,10 +13,41 @@ on:
           required: false
           default: 'apply'
 
-#JOB1: PLANNING 
 jobs:
+  #JOBS: LINTIN VALIDATION
+    terraform_lint:
+        name: "🧹 Lint & Validate"
+        runs-on: ubuntu-latest
+        steps:
+          - name: Code Checkout 
+            uses: action/checkout@v4
+
+          - name: Setup terraform
+            uses: hashicorp/setup-terraform@v3
+            with:
+              terraform_version: "1.10.0"
+              cli_config_credentials_token: ${{ secrets.API_TOKEN_TF }}
+          
+          - name: Terraform format check
+            id: terraform_check
+            run: terraform fmt -check -recursive
+            # the flag -check makes the command fail (exit 1) if there are improperly formatted files
+
+          - name: Terraform init
+            run: terraform init -backend=false
+            # backend false avoid that terraform try to connect to bucket, just donwload the pluggins and modules
+
+          - name: terraform validate
+            id: validate
+            if: steps.terraform_check.outcome == 'success'
+            run: |
+              echo "the init of terraform was succesfull"
+              terraform validate -no-color
+
+
+    #JOB1: PLANNING 
     terraform_plan:
-        needs: terraform_lint # <-- JOBS testing
+        #needs: terraform_lint # <-- JOBS testing
         name: "🚀 Planning ${{ github.event.inputs.action || 'Push Apply' }}"
         env:
           TF_VAR_gcp_credentials: ${{ secrets.GCP_SA_TERRAFORM }}
@@ -56,9 +87,6 @@ jobs:
               id: init
               run: terraform init
 
-            - name: terraform plan
-              run: terraform plan -input=false
-
             - name: apply plan or destroy
               run: |
                 ACTION=$(echo "${{ github.event.inputs.action }}" | xargs | tr '[:upper:]' '[:lower:]')
@@ -76,7 +104,7 @@ jobs:
                 name: tf-plan-file
                 path: tfplan
 
-#JOB2: APPLY
+    #JOB2: APPLY
     terraform_apply:
         name: "🚀 Applying ${{ github.event.inputs.action || 'Push Apply' }}"
         needs: terraform_plan
@@ -113,48 +141,19 @@ jobs:
                 terraform apply -auto-approve tfplan
 
  
-#JOBS: LINTIN VALIDATION
-    terraform_lint:
-      name: "🧹 Lint & Validate"
-      runs-on: ubuntu-latest
-      steps:
-        - name: Code Checkout 
-          uses: acction/checkout@v4
-
-        - name: Setup terraform
-          uses: hashicorp/setup-terraform@v3
-          with:
-            terraform_version: "1.10.0"
-            cli_config_credentials_token: ${{ secrets.API_TOKEN_TF }}
-        
-        - name: Terraform format check
-          id: terraform_check
-          run: terraform fmt -check -recursive
-          # the flag -check makes the command fail (exit 1) if there are improperly formatted files
-
-        - name: Terraform init
-          run: terraform init -backend=false
-          # backend false avoid that terraform try to connect to bucket, just donwload the pluggins and modules
-
-        - name: terraform validate
-          id: validate
-          if: steps.terraform_check.outcome == 'success'
-          run: |
-            echo "the init of terraform was succesfull"
-            terraform validate -no-color
-
     #JOB3: REPORT INFROMATION
-
     final_report:
       name: "final information from workflow"
-      needs: [terraform_lint, terraform_apply ]
+      needs: [terraform_lint, terraform_plan,terraform_apply ]
       if: failure()
       runs-on: ubuntu-latest
       steps:
         - name: Output information
           run: |
-            echo " something wrong" 
-            echo "${{ github }}"
+            echo "❌ El Workflow falló en alguna etapa."
+            echo "Actor: ${{ github.actor }}"
+            echo "Evento: ${{ github.event_name }}"
+            # No imprimas el objeto 'github' completo por seguridad, solo lo necesario.
 
              
 
